@@ -9,33 +9,28 @@ import scala.reflect.macros.blackbox
 
 object CS {
   def setParam[T](name: String, value: T, cs: CallableStatement): Unit = macro MacrosImpl.setParam_impl[T]
-  def setParamOpt[T](name: String, value: Option[T], cs: CallableStatement): Unit = macro MacrosImpl.setParamOpt_impl[T]
 }
 
 object MacrosImpl {
-  // TODO collapse?
-  def setParamOpt_impl[T: c.WeakTypeTag](c: blackbox.Context)(name: c.Tree, value: c.Tree, cs: c.Tree): c.Tree = {
-    import c.universe._
-
-    val t = setParam_impl(c)(name, q"$value.get", cs)
-    val tNo = setParamNull_impl(c)(name, cs)
-
-
-//    val innerType = weakTypeOf[T].baseType(typeOf[Option[_]].typeSymbol) match {
-//      case TypeRef(_, _, targ :: Nil) =>
-//        c.abort(c.enclosingPosition, s"Option of $targ")
-//        // pull 2 matches out and refer to them from here?
-//      case NoType => c.abort(c.enclosingPosition, "Not an option")// Not an option?
-//    }
-
-    q"if ($value.isDefined) $t else $tNo"
-  }
-
   def setParam_impl[T: c.WeakTypeTag](c: blackbox.Context)(name: c.Tree, value: c.Tree, cs: c.Tree): c.Tree = {
     import c.universe._
-    val tt = implicitly[c.WeakTypeTag[T]]
+    val tt = weakTypeOf[T]
 
-    tt.tpe match {
+    tt.baseType(typeOf[Option[_]].typeSymbol) match {
+      case TypeRef(_, _, targ :: Nil) =>
+        val t = doSetParam(c)(name, q"$value.get", cs, targ)
+        val tNo = doSetNullParam(c)(name, cs, targ)
+        q"if ($value.isDefined) $t else $tNo"
+      case NoType =>
+        val tr = doSetParam(c)(name, value, cs, tt)
+        q"$tr" // TODO
+    }
+  }
+
+  private def doSetParam(c: blackbox.Context)(name: c.Tree, value: c.Tree, cs: c.Tree, tpe: c.Type): c.Tree = {
+    import c.universe._
+
+    tpe match {
       // Error on Option use other?
       case t if t =:= typeOf[Byte] =>
         q"$cs.setByte($name, $value)"
@@ -66,15 +61,12 @@ object MacrosImpl {
       case _ =>
         q"$cs.setObject($name, $value)"
     }
-
-
   }
 
-  def setParamNull_impl[T: c.WeakTypeTag](c: blackbox.Context)(name: c.Tree, cs: c.Tree): c.Tree = {
+  private def doSetNullParam(c: blackbox.Context)(name: c.Tree, cs: c.Tree, tpe: c.Type): c.Tree = {
     import c.universe._
-    val tt = implicitly[c.WeakTypeTag[T]]
 
-    tt.tpe match {
+    tpe match {
       case t if t =:= typeOf[Byte] =>
         q"$cs.setNull($name, ${Types.TINYINT})"
       case t if t =:= typeOf[String] =>

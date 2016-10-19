@@ -12,10 +12,10 @@ class MyExample {
   val noneInt: Option[Int] = None
   val someInt: Option[Int] = Some(12345)
 
-  CS.setParamOpt("aNoneStringParam", Option[String](null), cs)
-  CS.setParamOpt("aSomeStringParam", Some("Yo"), cs)
-  CS.setParamOpt("aNoneIntParam", noneInt, cs)
-  CS.setParamOpt("aSomeIntParam", someInt, cs)
+  CS.setParam("aNoneStringParam", Option[String](null), cs)
+  CS.setParam("aSomeStringParam", Some("Yo"), cs)
+  CS.setParam("aNoneIntParam", noneInt, cs)
+  CS.setParam("aSomeIntParam", someInt, cs)
 
   CS.setParam("aByteParam", 123.toByte, cs)
   CS.setParam("aStringParam", "hello", cs)
@@ -29,6 +29,6 @@ class MyExample {
   CS.setParam("aTimeParam", new Time(System.currentTimeMillis()), cs)
   CS.setParam("aTimestampParam", new Timestamp(System.currentTimeMillis()), cs)
   CS.setParam("aBooleanParam", false, cs)
-//  CS.setParam("anotherParam", MyType("Neil", 99), cs)
+  CS.setParam("anotherParam", MyType("Neil", 99), cs)
 
 }
