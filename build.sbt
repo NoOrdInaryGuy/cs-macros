@@ -4,7 +4,7 @@ import sbt.Keys._
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.7",
   organization := "callable-statement-macros",
-  version := "1.0.0-SNAPSHOT"
+  version := "0.0.1-SNAPSHOT"
 )
 
 lazy val macros = project.in(file("macros")).
