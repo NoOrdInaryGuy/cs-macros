@@ -31,7 +31,6 @@ object MacrosImpl {
     import c.universe._
 
     tpe match {
-      // Error on Option use other?
       case t if t =:= typeOf[Byte] =>
         q"$cs.setByte($name, $value)"
       case t if t =:= typeOf[String] =>
