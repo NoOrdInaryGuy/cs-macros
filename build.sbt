@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
   licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
 )
 
-lazy val macros = project.in(file("macros")).
+lazy val root = project.in(file(".")).
   settings(commonSettings: _*).
   settings(
     name := "callable-statement-macros",
@@ -21,19 +21,8 @@ lazy val macros = project.in(file("macros")).
     libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.12",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
+//    scalacOptions ++= Seq("-Xprint:typer")
   )
-
-lazy val samples = project.in(file("samples")).
-  settings(commonSettings: _*).
-  settings(
-    name := "callable-statement-samples",
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7",
-    libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.12",
-    scalacOptions ++= Seq("-Xprint:typer")
-  ).
-  dependsOn(macros)
-
-lazy val root = project.in(file(".")).aggregate(macros, samples)
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
