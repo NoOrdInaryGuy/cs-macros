@@ -20,7 +20,6 @@ lazy val root = project.in(file(".")).
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
-//    scalacOptions ++= Seq("-Xprint:typer")
   )
 
 publishTo := {
