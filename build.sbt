@@ -18,7 +18,6 @@ lazy val root = project.in(file(".")).
   settings(
     name := "callable-statement-macros",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.12",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 //    scalacOptions ++= Seq("-Xprint:typer")
