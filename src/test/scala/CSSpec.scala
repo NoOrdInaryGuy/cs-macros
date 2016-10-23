@@ -1,17 +1,17 @@
 import java.sql._
 
-import org.scalatest.WordSpec
+import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.mockito.MockitoSugar
 import org.mockito.Mockito._
 
-class CSSpec extends WordSpec with MockitoSugar {
+class CSSpec extends WordSpec with MockitoSugar with Matchers {
   trait Context {
     val name = "TheName"
     val cs = mock[CallableStatement]
     case class AnotherClass(field: String)
   }
 
-  "The CS Macro" should {
+  "The CS Macro (sets)" should {
     "Call setByte when given a Byte" in new Context {
       val input: Byte = 5.toByte
       CS.setParam(name, input, cs)
@@ -95,7 +95,9 @@ class CSSpec extends WordSpec with MockitoSugar {
       CS.setParam(name, input, cs)
       verify(cs).setObject(name, input)
     }
+  }
 
+  "The CS Macro (sets with Option)" should {
     "Call setByte when given a Some[Byte]" in new Context {
       val wrapped: Byte = 5.toByte
       val input: Option[Byte] = Some(wrapped)
@@ -265,6 +267,321 @@ class CSSpec extends WordSpec with MockitoSugar {
       val input: Option[AnotherClass] = None
       CS.setParam(name, input, cs)
       verify(cs).setNull(name, Types.OTHER)
+    }
+  }
+
+  "The CS Macro (gets)" should {
+    "Call getByte when reading a Byte" in new Context {
+      val output: Byte = 5.toByte
+      when(cs.getByte(name)).thenReturn(output)
+      val result = CS.getParam[Byte](name, cs)
+      verify(cs).getByte(name)
+      result should equal(output)
+    }
+
+    "Call getString when reading a String" in new Context {
+      val output: String = "AbCdEf"
+      when(cs.getString(name)).thenReturn(output)
+      val result = CS.getParam[String](name, cs)
+      verify(cs).getString(name)
+      result should equal(output)
+    }
+
+    "Call getBigDecimal when reading a java.match.BigDecimal" in new Context {
+      val output: java.math.BigDecimal = new java.math.BigDecimal(12345)
+      when(cs.getBigDecimal(name)).thenReturn(output)
+      val result = CS.getParam[java.math.BigDecimal](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(output)
+    }
+
+    "Call getBigDecimal when reading a BigDecimal" in new Context {
+      val output: BigDecimal = BigDecimal(12345)
+      when(cs.getBigDecimal(name)).thenReturn(output.bigDecimal)
+      val result = CS.getParam[BigDecimal](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(output)
+    }
+
+    "Call getShort when reading a Short" in new Context {
+      val output: Short = 1234
+      when(cs.getShort(name)).thenReturn(output)
+      val result = CS.getParam[Short](name, cs)
+      verify(cs).getShort(name)
+      result should equal(output)
+    }
+
+    "Call getInt when reading a Int" in new Context {
+      val output: Int = 12345
+      when(cs.getInt(name)).thenReturn(output)
+      val result = CS.getParam[Int](name, cs)
+      verify(cs).getInt(name)
+      result should equal(output)
+    }
+
+    "Call getLong when reading a Long" in new Context {
+      val output: Long = 12345l
+      when(cs.getLong(name)).thenReturn(output)
+      val result = CS.getParam[Long](name, cs)
+      verify(cs).getLong(name)
+      result should equal(output)
+    }
+
+    "Call getDouble when reading a Double" in new Context {
+      val output: Double = 12.34
+      when(cs.getDouble(name)).thenReturn(output)
+      val result = CS.getParam[Double](name, cs)
+      verify(cs).getDouble(name)
+      result should equal(output)
+    }
+
+    "Call getFloat when reading a Float" in new Context {
+      val output: Float = 12.34f
+      when(cs.getFloat(name)).thenReturn(output)
+      val result = CS.getParam[Float](name, cs)
+      verify(cs).getFloat(name)
+      result should equal(output)
+    }
+
+    "Call getDate when reading a Date" in new Context {
+      val output: Date = new Date(123123123123l)
+      when(cs.getDate(name)).thenReturn(output)
+      val result = CS.getParam[Date](name, cs)
+      verify(cs).getDate(name)
+      result should equal(output)
+    }
+
+    "Call getTime when reading a Time" in new Context {
+      val output: Time = new Time(123123123123l)
+      when(cs.getTime(name)).thenReturn(output)
+      val result = CS.getParam[Time](name, cs)
+      verify(cs).getTime(name)
+      result should equal(output)
+    }
+
+    "Call getTimestamp when reading a Timestamp" in new Context {
+      val output: Timestamp = new Timestamp(123123123123l)
+      when(cs.getTimestamp(name)).thenReturn(output)
+      val result = CS.getParam[Timestamp](name, cs)
+      verify(cs).getTimestamp(name)
+      result should equal(output)
+    }
+
+    "Call getBoolean when reading a Timestamp" in new Context {
+      val output: Boolean = false
+      when(cs.getBoolean(name)).thenReturn(output)
+      val result = CS.getParam[Boolean](name, cs)
+      verify(cs).getBoolean(name)
+      result should equal(output)
+    }
+  }
+
+  "The CS Macro (gets with Option)" should {
+    "Call getByte when reading an Option[Byte], return Some if != 0" in new Context {
+      val output: Byte = 5.toByte
+      when(cs.getByte(name)).thenReturn(output)
+      val result = CS.getParam[Option[Byte]](name, cs)
+      verify(cs).getByte(name)
+      result should equal(Some(output))
+    }
+
+    "Call getByte when reading an Option[Byte], return None if == 0" in new Context {
+      val output: Byte = 0
+      when(cs.getByte(name)).thenReturn(output)
+      val result = CS.getParam[Option[Byte]](name, cs)
+      verify(cs).getByte(name)
+      result should equal(None)
+    }
+
+    "Call getString when reading an Option[String], return Some if != null" in new Context {
+      val output: String = "A String"
+      when(cs.getString(name)).thenReturn(output)
+      val result = CS.getParam[Option[String]](name, cs)
+      verify(cs).getString(name)
+      result should equal(Some(output))
+    }
+
+    "Call getString when reading an Option[String], return None if == null" in new Context {
+      val output: String = null
+      when(cs.getString(name)).thenReturn(output)
+      val result = CS.getParam[Option[String]](name, cs)
+      verify(cs).getString(name)
+      result should equal(None)
+    }
+
+    "Call getBigDecimal when reading an Option[java.math.BigDecimal], return Some if != null" in new Context {
+      val output: java.math.BigDecimal = new java.math.BigDecimal(12345)
+      when(cs.getBigDecimal(name)).thenReturn(output)
+      val result = CS.getParam[Option[java.math.BigDecimal]](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(Some(output))
+    }
+
+    "Call getBigDecimal when reading an Option[java.math.BigDecimal], return None if == null" in new Context {
+      val output: java.math.BigDecimal = null
+      when(cs.getBigDecimal(name)).thenReturn(output)
+      val result = CS.getParam[Option[java.math.BigDecimal]](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(None)
+    }
+
+    "Call getBigDecimal when reading an Option[BigDecimal], return Some if != null" in new Context {
+      val output: BigDecimal = BigDecimal(12345)
+      when(cs.getBigDecimal(name)).thenReturn(output.bigDecimal)
+      val result = CS.getParam[Option[BigDecimal]](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(Some(output))
+    }
+
+    "Call getBigDecimal when reading an Option[BigDecimal], return None if == null" in new Context {
+      when(cs.getBigDecimal(name)).thenReturn(null:java.math.BigDecimal)
+      val result = CS.getParam[Option[BigDecimal]](name, cs)
+      verify(cs).getBigDecimal(name)
+      result should equal(None)
+    }
+
+    "Call getShort when reading an Option[Short], return Some if != 0" in new Context {
+      val output: Short = 1234
+      when(cs.getShort(name)).thenReturn(output)
+      val result = CS.getParam[Option[Short]](name, cs)
+      verify(cs).getShort(name)
+      result should equal(Some(output))
+    }
+
+    "Call getShort when reading an Option[Short], return None if == 0" in new Context {
+      val output: Short = 0
+      when(cs.getShort(name)).thenReturn(output)
+      val result = CS.getParam[Option[Short]](name, cs)
+      verify(cs).getShort(name)
+      result should equal(None)
+    }
+
+    "Call getInt when reading an Option[Int], return Some if != 0" in new Context {
+      val output: Int = 1234
+      when(cs.getInt(name)).thenReturn(output)
+      val result = CS.getParam[Option[Int]](name, cs)
+      verify(cs).getInt(name)
+      result should equal(Some(output))
+    }
+
+    "Call getInt when reading an Option[Int], return None if == 0" in new Context {
+      val output: Int = 0
+      when(cs.getInt(name)).thenReturn(output)
+      val result = CS.getParam[Option[Int]](name, cs)
+      verify(cs).getInt(name)
+      result should equal(None)
+    }
+
+    "Call getLong when reading an Option[Long], return Some if != 0" in new Context {
+      val output: Long = 1234l
+      when(cs.getLong(name)).thenReturn(output)
+      val result = CS.getParam[Option[Long]](name, cs)
+      verify(cs).getLong(name)
+      result should equal(Some(output))
+    }
+
+    "Call getLong when reading an Option[Long], return None if == 0" in new Context {
+      val output: Long = 0
+      when(cs.getLong(name)).thenReturn(output)
+      val result = CS.getParam[Option[Long]](name, cs)
+      verify(cs).getLong(name)
+      result should equal(None)
+    }
+
+    "Call getDouble when reading an Option[Double], return Some if != 0" in new Context {
+      val output: Double = 1.23d
+      when(cs.getDouble(name)).thenReturn(output)
+      val result = CS.getParam[Option[Double]](name, cs)
+      verify(cs).getDouble(name)
+      result should equal(Some(output))
+    }
+
+    "Call getDouble when reading an Option[Double], return None if == 0" in new Context {
+      val output: Double = 0.0d
+      when(cs.getDouble(name)).thenReturn(output)
+      val result = CS.getParam[Option[Double]](name, cs)
+      verify(cs).getDouble(name)
+      result should equal(None)
+    }
+
+    "Call getFloat when reading an Option[Float], return Some if != 0" in new Context {
+      val output: Float = 1.23f
+      when(cs.getFloat(name)).thenReturn(output)
+      val result = CS.getParam[Option[Float]](name, cs)
+      verify(cs).getFloat(name)
+      result should equal(Some(output))
+    }
+
+    "Call getFloat when reading an Option[Float], return None if == 0" in new Context {
+      val output: Float = 0.0f
+      when(cs.getFloat(name)).thenReturn(output)
+      val result = CS.getParam[Option[Float]](name, cs)
+      verify(cs).getFloat(name)
+      result should equal(None)
+    }
+
+    "Call getDate when reading an Option[Date], return Some if != null" in new Context {
+      val output: Date = new Date(123123123123l)
+      when(cs.getDate(name)).thenReturn(output)
+      val result = CS.getParam[Option[Date]](name, cs)
+      verify(cs).getDate(name)
+      result should equal(Some(output))
+    }
+
+    "Call getDate when reading an Option[Date], return None if == null" in new Context {
+      val output: Date = null
+      when(cs.getDate(name)).thenReturn(output)
+      val result = CS.getParam[Option[Date]](name, cs)
+      verify(cs).getDate(name)
+      result should equal(None)
+    }
+
+    "Call getTime when reading an Option[Time], return Some if != null" in new Context {
+      val output: Time = new Time(123123123123l)
+      when(cs.getTime(name)).thenReturn(output)
+      val result = CS.getParam[Option[Time]](name, cs)
+      verify(cs).getTime(name)
+      result should equal(Some(output))
+    }
+
+    "Call getTime when reading an Option[Time], return None if == null" in new Context {
+      val output: Time = null
+      when(cs.getTime(name)).thenReturn(output)
+      val result = CS.getParam[Option[Time]](name, cs)
+      verify(cs).getTime(name)
+      result should equal(None)
+    }
+
+    "Call getTimestamp when reading an Option[Timestamp], return Some if != null" in new Context {
+      val output: Timestamp = new Timestamp(123123123123l)
+      when(cs.getTimestamp(name)).thenReturn(output)
+      val result = CS.getParam[Option[Timestamp]](name, cs)
+      verify(cs).getTimestamp(name)
+      result should equal(Some(output))
+    }
+
+    "Call getTimestamp when reading an Option[Timestamp], return None if == null" in new Context {
+      val output: Timestamp = null
+      when(cs.getTimestamp(name)).thenReturn(output)
+      val result = CS.getParam[Option[Timestamp]](name, cs)
+      verify(cs).getTimestamp(name)
+      result should equal(None)
+    }
+
+    "Call getBoolean when reading an Option[Boolean], return Some if == true" in new Context {
+      val output: Boolean = true
+      when(cs.getBoolean(name)).thenReturn(output)
+      val result = CS.getParam[Option[Boolean]](name, cs)
+      verify(cs).getBoolean(name)
+      result should equal(Some(output))
+    }
+
+    "Call getBoolean when reading an Option[Boolean], return None if == false" in new Context {
+      val output: Boolean = false
+      when(cs.getBoolean(name)).thenReturn(output)
+      val result = CS.getParam[Option[Boolean]](name, cs)
+      verify(cs).getBoolean(name)
+      result should equal(None)
     }
   }
 }
